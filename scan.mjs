@@ -16,7 +16,7 @@ const OUT_PATH = path.join(process.cwd(), 'data', 'scan.json');
 // ---------- 対象13銘柄 ----------
 const AUTO_SYMS = [
   { id: 'XAUUSD', src: 'td', tsym: 'XAU/USD' },
-  { id: 'BTCUSD', src: 'binance', bsym: 'BTCUSDT' },
+  { id: 'BTCUSD', src: 'td', tsym: 'BTC/USD' },
   { id: 'USDJPY', src: 'td', tsym: 'USD/JPY' },
   { id: 'EURJPY', src: 'td', tsym: 'EUR/JPY' },
   { id: 'AUDJPY', src: 'td', tsym: 'AUD/JPY' },
@@ -41,6 +41,46 @@ const COT_KEYWORDS = {
   DXY: 'USD INDEX', JXY: 'JAPANESE YEN', EXY: 'EURO FX', BXY: 'BRITISH POUND',
   CHFX: 'SWISS FRANC', AXY: 'AUSTRALIAN DOLLAR', XAU: 'GOLD - COMMODITY EXCHANGE', BTC: 'BITCOIN',
 };
+
+// 経済指標カレンダー: ForexFactoryが配信している公開JSON（キー不要）。非公式のCDNエンドポイントなので
+// 将来フォーマット変更や停止のリスクはあるが、現状は多くのEA/ツールで広く使われている
+const FF_CALENDAR_URL = 'https://cdn-nfs.faireconomy.media/ff_calendar_thisweek.json';
+const RELEVANT_CURRENCIES = new Set(['USD', 'JPY', 'EUR', 'GBP', 'CHF', 'AUD']);
+// タイトルのキーワード → アプリ内の EVT_TYPES id にマッピング
+const EVENT_KEYWORD_MAP = [
+  [/CPI/i, 'cpi'], [/Non-?Farm|NFP/i, 'nfp'], [/FOMC|Fed.*Interest Rate|Federal Funds Rate/i, 'fomc'],
+  [/ECB.*Rate|Main Refinancing/i, 'ecb'], [/BOE|Bank of England.*Rate/i, 'boe'], [/BOJ|Bank of Japan.*Rate/i, 'boj'],
+  [/PPI/i, 'ppi'], [/ADP/i, 'adp'], [/PMI/i, 'pmi'], [/ISM/i, 'ism'],
+  [/Unemployment Claims|Jobless Claims/i, 'claims'], [/Retail Sales/i, 'retail'], [/GDP/i, 'gdp'],
+];
+function matchEventType(title) {
+  for (const [re, id] of EVENT_KEYWORD_MAP) { if (re.test(title)) return id; }
+  return null;
+}
+async function fetchTodayEvents() {
+  const r = await fetchWithTimeout(FF_CALENDAR_URL, 15000);
+  if (!r.ok) throw new Error('経済指標カレンダー取得失敗');
+  const events = await r.json();
+  const jstNow = new Date(Date.now() + 9 * 3600 * 1000);
+  const todayStr = jstNow.toISOString().slice(0, 10);
+  const matched = [];
+  for (const e of events) {
+    if (!e.date || !e.country) continue;
+    if (!RELEVANT_CURRENCIES.has(e.country)) continue;
+    if (e.impact !== 'High' && e.impact !== 'Medium') continue;
+    const evtDate = new Date(e.date);
+    const evtJst = new Date(evtDate.getTime() + 9 * 3600 * 1000);
+    if (evtJst.toISOString().slice(0, 10) !== todayStr) continue;
+    const typeId = matchEventType(e.title || '');
+    if (!typeId) continue; // アプリ内カテゴリに対応しないものはスキップ（otherに丸めない）
+    const hh = String(evtJst.getUTCHours()).padStart(2, '0');
+    const mm = String(evtJst.getUTCMinutes()).padStart(2, '0');
+    matched.push({ type: typeId, time: `${hh}:${mm}`, impact: e.impact, title: e.title, country: e.country });
+  }
+  // High優先、その後時刻順。最大3件（アプリ側のevtSlotsが3枠のため）
+  matched.sort((a, b) => (a.impact === b.impact ? a.time.localeCompare(b.time) : (a.impact === 'High' ? -1 : 1)));
+  return matched.slice(0, 3);
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -244,12 +284,12 @@ async function main() {
     if (i < fxSyms.length - 1) await sleep(8000);
   }
 
-  // トレンド信号(H4/D1/W1) — XAU/BTC/JPYの3銘柄のみ
-  console.log('トレンド信号(H4/D1/W1)を計算中...');
+  // トレンド信号(H4/D1/W1) — 全13銘柄で計算し、上位3つを「今日の主力候補」として抽出
+  console.log('トレンド信号(H4/D1/W1)を計算中（全13銘柄）...');
   const trendGreen = {};
-  for (const symId of ['XAUUSD', 'BTCUSD', 'USDJPY']) {
+  for (const sym of AUTO_SYMS) {
+    const symId = sym.id;
     if (!h4Cache[symId]) continue;
-    const sym = AUTO_SYMS.find((s) => s.id === symId);
     let g = trendBias(h4Cache[symId]) === 'BULL' ? 1 : 0;
     try {
       let d1, w1;
@@ -267,6 +307,17 @@ async function main() {
     } catch (e) { /* ignore, keep partial score */ }
     trendGreen[symId] = g;
   }
+  // 上位3つをランキング（同点はメインシグナルが「確定」のものを優先）
+  const top3 = AUTO_SYMS.map((s) => s.id)
+    .filter((id) => trendGreen[id] != null)
+    .sort((a, b) => {
+      if (trendGreen[b] !== trendGreen[a]) return trendGreen[b] - trendGreen[a];
+      const aConfirmed = results[a] && results[a].judge && results[a].judge.startsWith('確定') ? 1 : 0;
+      const bConfirmed = results[b] && results[b].judge && results[b].judge.startsWith('確定') ? 1 : 0;
+      return bConfirmed - aConfirmed;
+    })
+    .slice(0, 3)
+    .map((id) => ({ pair: id, green: trendGreen[id], dir: trendGreen[id] >= 2 ? 'up' : 'down' }));
 
   // COT (CFTC) — サーバーサイドなのでCORSの心配なし
   console.log('COT(CFTC)を取得中...');
@@ -306,21 +357,56 @@ async function main() {
   if (results.BTCUSD && results.BTCUSD.weeklyPct != null) csiData.BTC = results.BTCUSD.weeklyPct;
   const dxyBias = csiData.DXY == null ? null : csiData.DXY > 0.3 ? 'strong' : csiData.DXY < -0.3 ? 'weak' : 'neutral';
 
+  // 経済指標カレンダー（ForexFactory公開JSON、無料・キー不要）
+  let todayEvents = [];
+  console.log('経済指標カレンダーを取得中...');
+  try {
+    todayEvents = await fetchTodayEvents();
+  } catch (e) {
+    console.error('経済指標カレンダー取得エラー:', e.message);
+  }
+
   const output = {
     ts: Date.now(),
     generatedAt: new Date().toISOString(),
     killZoneAtGenTime: getKillZoneJST(),
     results,
     trendGreen,
+    top3,
     cotBiasByPair,
     cotDate,
     csiData,
     dxyBias,
+    todayEvents,
   };
 
   await mkdir(path.dirname(OUT_PATH), { recursive: true });
   await writeFile(OUT_PATH, JSON.stringify(output, null, 2));
   console.log('完了:', OUT_PATH);
+
+  // 高確度シグナル（Tier1・確定・RR2以上）をDiscordに通知（Webhook未設定ならスキップ）
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL || '';
+  if (webhookUrl) {
+    const hot = Object.entries(results).filter(([id, r]) =>
+      r && !r.error && r.tier === 'Tier1' && r.judge && r.judge.startsWith('確定') && r.rr != null && r.rr >= 2
+    );
+    if (hot.length) {
+      const lines = hot.map(([id, r]) => `**${id}** ${r.dir} — ${r.note} (RR 1:${r.rr})`);
+      const content = `🎯 高確度シグナル検出（Tier1・確定・RR2以上）\n${lines.join('\n')}`;
+      try {
+        const res = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content }),
+        });
+        console.log('Discord通知:', res.status, hot.length + '件');
+      } catch (e) {
+        console.error('Discord通知エラー:', e.message);
+      }
+    } else {
+      console.log('高確度シグナルなし（通知スキップ）');
+    }
+  }
 }
 
 main().catch((e) => { console.error(e); process.exitCode = 1; });
