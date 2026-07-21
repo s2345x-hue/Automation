@@ -1,55 +1,55 @@
 {
-  "ts": 1784536269805,
-  "generatedAt": "2026-07-20T08:31:09.805Z",
-  "killZoneAtGenTime": "ロンドン KZ",
+  "ts": 1784616491719,
+  "generatedAt": "2026-07-21T06:48:11.719Z",
+  "killZoneAtGenTime": "KZ外",
   "results": {
     "BTCUSD": {
       "error": "Binance取得失敗"
     },
     "XAUUSD": {
-      "tier": "Tier2",
-      "dir": "SELL",
-      "judge": "除外",
-      "note": "BSL sweepのみ・CHoCH未確定",
-      "rr": null,
-      "tf4": "NEUTRAL",
-      "weeklyPct": -1.1
-    },
-    "USDJPY": {
       "tier": "Tier1",
       "dir": "BUY",
       "judge": "除外",
-      "note": "SSL sweepのみ・CHoCH未確定",
+      "note": "RR不成立",
       "rr": null,
       "tf4": "BULL",
-      "weeklyPct": 0.17
+      "weeklyPct": 1.54
     },
-    "EURJPY": {
-      "tier": "—",
-      "dir": "WAIT",
-      "judge": "除外",
-      "note": "1Hもレンジ",
-      "rr": null,
-      "tf4": "NEUTRAL",
-      "weeklyPct": 0.21
-    },
-    "AUDJPY": {
+    "USDJPY": {
       "tier": "Tier1",
       "dir": "SELL",
       "judge": "除外",
       "note": "BSL sweepのみ・CHoCH未確定",
       "rr": null,
       "tf4": "BEAR",
-      "weeklyPct": 1
+      "weeklyPct": 0.16
     },
-    "CHFJPY": {
+    "EURJPY": {
+      "tier": "Tier2",
+      "dir": "BUY",
+      "judge": "除外",
+      "note": "RR不成立",
+      "rr": null,
+      "tf4": "NEUTRAL",
+      "weeklyPct": 0.36
+    },
+    "AUDJPY": {
       "tier": "—",
       "dir": "WAIT",
       "judge": "除外",
       "note": "1Hもレンジ",
       "rr": null,
-      "tf4": "NEUTRAL",
-      "weeklyPct": 0.34
+      "tf4": "BULL",
+      "weeklyPct": 1.18
+    },
+    "CHFJPY": {
+      "tier": "—",
+      "dir": "WAIT",
+      "judge": "除外",
+      "note": "4H逆行のため除外",
+      "rr": null,
+      "tf4": "BEAR",
+      "weeklyPct": 0.51
     },
     "AUDUSD": {
       "tier": "—",
@@ -57,26 +57,26 @@
       "judge": "除外",
       "note": "1Hもレンジ",
       "rr": null,
-      "tf4": "BEAR",
-      "weeklyPct": 0.82
+      "tf4": "BULL",
+      "weeklyPct": 1.02
     },
     "EURCHF": {
-      "tier": "Tier2",
+      "tier": "Tier1",
       "dir": "BUY",
-      "judge": "確定",
-      "note": "SSL sweep+CHoCH",
-      "rr": 8.3,
-      "tf4": "NEUTRAL",
-      "weeklyPct": -0.14
+      "judge": "除外",
+      "note": "RR不成立",
+      "rr": null,
+      "tf4": "BULL",
+      "weeklyPct": -0.15
     },
     "GBPCHF": {
       "tier": "—",
       "dir": "WAIT",
       "judge": "除外",
-      "note": "1Hもレンジ",
+      "note": "4H逆行のため除外",
       "rr": null,
-      "tf4": "NEUTRAL",
-      "weeklyPct": 0.37
+      "tf4": "BULL",
+      "weeklyPct": 0.23
     },
     "EURUSD": {
       "tier": "Tier2",
@@ -85,57 +85,56 @@
       "note": "BSL sweepのみ・CHoCH未確定",
       "rr": null,
       "tf4": "NEUTRAL",
-      "weeklyPct": 0.02
+      "weeklyPct": 0.19
     },
     "GBPUSD": {
       "tier": "—",
       "dir": "WAIT",
       "judge": "除外",
-      "note": "4H逆行のため除外",
+      "note": "1Hもレンジ",
       "rr": null,
-      "tf4": "BEAR",
-      "weeklyPct": 0.53
+      "tf4": "NEUTRAL",
+      "weeklyPct": 0.58
     },
     "GBPJPY": {
-      "tier": "Tier1",
-      "dir": "SELL",
-      "judge": "確定",
-      "note": "BSL sweep+CHoCH",
-      "rr": 1.9,
-      "tf4": "BEAR",
-      "weeklyPct": 0.72
-    },
-    "USDCHF": {
       "tier": "—",
       "dir": "WAIT",
       "judge": "除外",
-      "note": "4H逆行のため除外",
+      "note": "1Hもレンジ",
       "rr": null,
-      "tf4": "BULL",
-      "weeklyPct": -0.17
+      "tf4": "BEAR",
+      "weeklyPct": 0.75
+    },
+    "USDCHF": {
+      "tier": "Tier2",
+      "dir": "SELL",
+      "judge": "除外",
+      "note": "BSL sweepのみ・CHoCH未確定",
+      "rr": null,
+      "tf4": "NEUTRAL",
+      "weeklyPct": -0.35
     }
   },
   "trendGreen": {
-    "XAUUSD": 0,
-    "USDJPY": 3
+    "XAUUSD": 1,
+    "USDJPY": 2
   },
   "cotBiasByPair": {
     "XAUUSD": "long",
     "BTCUSD": "neutral",
-    "AUDUSD": "short",
-    "EURUSD": "short",
-    "GBPUSD": "short"
+    "EURCHF": "long",
+    "GBPCHF": "long"
   },
   "cotDate": "2026-07-14T00:00:00.000",
   "csiData": {
-    "DXY": -0.27,
-    "JXY": -0.49,
-    "EXY": 0.03,
-    "BXY": 0.54,
-    "CHFX": 0.07,
-    "AXY": 0.91,
-    "XAU": -1.1,
+    "DXY": -0.4,
+    "JXY": -0.59,
+    "EXY": 0.13,
+    "BXY": 0.52,
+    "CHFX": 0.2,
+    "AXY": 1.1,
+    "XAU": 1.54,
     "BTC": null
   },
-  "dxyBias": "neutral"
+  "dxyBias": "weak"
 }
