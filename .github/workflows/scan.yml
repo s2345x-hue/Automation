@@ -2,8 +2,9 @@ name: Morning Scan
 
 on:
   schedule:
+    # 毎朝 JST 6:30 に実行（UTC 21:30、前日扱い）。時間を変えたい場合はここを調整
     - cron: '30 21 * * *'
-  workflow_dispatch: {}
+  workflow_dispatch: {}  # Actionsタブから手動実行もできるようにする
 
 permissions:
   contents: write
@@ -21,12 +22,21 @@ jobs:
       - name: Run scan
         env:
           TD_API_KEY: ${{ secrets.TD_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: node scan.mjs
+
+      - name: Save dated history snapshot
+        run: |
+          mkdir -p data/history
+          DATE=$(date -u +%Y-%m-%d)
+          cp data/scan.json "data/history/${DATE}.json"
+          # 直近90日分だけ残して古いものは削除（リポジトリが無限に肥大化しないように）
+          find data/history -name '*.json' -mtime +90 -delete
 
       - name: Commit result
         run: |
           git config user.name "morning-scan-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/scan.json
+          git add data/scan.json data/history
           git diff --quiet --cached || git commit -m "chore: update scan results $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git push
