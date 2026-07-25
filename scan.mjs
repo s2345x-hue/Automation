@@ -48,8 +48,11 @@ const FF_CALENDAR_URL = 'https://cdn-nfs.faireconomy.media/ff_calendar_thisweek.
 const RELEVANT_CURRENCIES = new Set(['USD', 'JPY', 'EUR', 'GBP', 'CHF', 'AUD']);
 // タイトルのキーワード → アプリ内の EVT_TYPES id にマッピング
 const EVENT_KEYWORD_MAP = [
-  [/CPI/i, 'cpi'], [/Non-?Farm|NFP/i, 'nfp'], [/FOMC|Fed.*Interest Rate|Federal Funds Rate/i, 'fomc'],
-  [/ECB.*Rate|Main Refinancing/i, 'ecb'], [/BOE|Bank of England.*Rate/i, 'boe'], [/BOJ|Bank of Japan.*Rate/i, 'boj'],
+  [/CPI/i, 'cpi'], [/Non-?Farm|NFP/i, 'nfp'],
+  [/FOMC|Fed(eral)?.*(Interest Rate|Funds Rate|Chair|Speaks|Press Conference|Statement)|Powell/i, 'fomc'],
+  [/ECB.*(Rate|Refinancing|Press Conference|Speaks)|Lagarde/i, 'ecb'],
+  [/BOE.*(Rate|Speaks|Press Conference)|Bank of England.*(Rate|Speaks)|Bailey/i, 'boe'],
+  [/BOJ.*(Rate|Press Conference|Speaks)|Bank of Japan.*(Rate|Speaks)|Ueda/i, 'boj'],
   [/PPI/i, 'ppi'], [/ADP/i, 'adp'], [/PMI/i, 'pmi'], [/ISM/i, 'ism'],
   [/Unemployment Claims|Jobless Claims/i, 'claims'], [/Retail Sales/i, 'retail'], [/GDP/i, 'gdp'],
 ];
@@ -79,7 +82,7 @@ async function fetchTodayEvents() {
   }
   // High優先、その後時刻順。最大3件（アプリ側のevtSlotsが3枠のため）
   matched.sort((a, b) => (a.impact === b.impact ? a.time.localeCompare(b.time) : (a.impact === 'High' ? -1 : 1)));
-  return matched.slice(0, 3);
+  return matched.slice(0, 5);
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -203,10 +206,10 @@ function judgeRow(tf4, sig, rr) {
   const dir = sig.dir;
   const aligned = (dir === 'BUY' && tf4 === 'BULL') || (dir === 'SELL' && tf4 === 'BEAR');
   const opposite = (dir === 'BUY' && tf4 === 'BEAR') || (dir === 'SELL' && tf4 === 'BULL');
-  if (opposite) return { tier: '—', dir: 'WAIT', judge: '除外', note: '4H逆行のため除外', rr: null, tf4 };
+  if (opposite) return { tier: '—', dir: 'WAIT', judge: '除外', note: '4H逆行のため除外', rr, tf4 };
   const tier = aligned ? 'Tier1' : 'Tier2';
-  if (!sig.confirmed) return { tier, dir, judge: '除外', note: (dir === 'BUY' ? 'SSL' : 'BSL') + ' sweepのみ・CHoCH未確定', rr: null, tf4 };
-  if (!rr || rr < 1.2) return { tier, dir, judge: '除外', note: rr ? `RRが低すぎる(1:${rr})` : 'RR不成立', rr: null, tf4 };
+  if (!sig.confirmed) return { tier, dir, judge: '除外', note: (dir === 'BUY' ? 'SSL' : 'BSL') + ' sweepのみ・CHoCH未確定', rr, tf4 };
+  if (!rr || rr < 1.2) return { tier, dir, judge: '除外', note: rr ? `RRが低すぎる(1:${rr})` : 'RR不成立', rr, tf4 };
   const nearEntry = dir === 'BUY' ? (sig.lastClose <= sig.chochLevel * 1.006) : (sig.lastClose >= sig.chochLevel * 0.994);
   const label = (dir === 'BUY' ? 'SSL' : 'BSL') + ' sweep+CHoCH';
   if (nearEntry) return { tier, dir, judge: '確定', note: label, rr, tf4 };

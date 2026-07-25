@@ -203,12 +203,12 @@ body{background:var(--bg);color:var(--tx);font-family:"Noto Sans JP",sans-serif;
   <div class="sec">
     <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bl3);border:1px solid rgba(74,144,217,.3);border-radius:9px">
       <span style="font-size:12px">🔑</span>
-      <div style="font-size:10px;color:var(--bl2);flex:1">Twelve Data APIキー設定済み（裏側で自動使用）</div>
+      <div id="tdKeyStatus" style="font-size:10px;color:var(--bl2);flex:1">Twelve Data APIキー設定済み（裏側で自動使用）</div>
       <button onclick="document.getElementById('tdKeyAdvanced').style.display=document.getElementById('tdKeyAdvanced').style.display==='none'?'block':'none'" style="font-size:9px;padding:4px 8px;background:transparent;color:var(--tx3);border:1px solid var(--brd2);border-radius:5px;cursor:pointer">変更</button>
     </div>
     <div id="tdKeyAdvanced" class="card" style="display:none;margin-top:6px">
       <div style="font-size:10px;color:var(--tx3);margin-bottom:8px;line-height:1.7">
-        <a href="https://twelvedata.com/pricing" target="_blank" style="color:var(--bl2)">twelvedata.com/pricing</a> の無料プランに登録（クレジットカード不要）→ ダッシュボードでAPIキーを発行 → 下に貼り付け。無料枠は800回/日・8回/分。キーはこの端末のブラウザにのみ保存され、どこにも送信されません。
+        <a href="https://twelvedata.com/pricing" target="_blank" style="color:var(--bl2)">twelvedata.com/pricing</a> の無料プランに登録（クレジットカード不要）→ ダッシュボードでAPIキーを発行 → 下に貼り付け。無料枠は800回/日・8回/分。<b>キーはこの端末のブラウザにのみ保存され、GitHubにはアップロードされません。</b>ブラウザやデバイスを変えるたびに再入力が必要です（GitHub Actionsによる毎朝の自動実行には影響ありません。あちらはSecretsに登録した別のキーを使います）。
       </div>
       <input id="tdApiKey" type="text" placeholder="Twelve DataのAPIキーを貼り付け" style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--brd2);border-radius:6px;color:var(--tx);font-size:12px;font-family:'DM Mono',monospace" oninput="saveTdKey(this.value)">
     </div>
@@ -262,7 +262,7 @@ body{background:var(--bg);color:var(--tx);font-family:"Noto Sans JP",sans-serif;
     </div>
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div style="font-size:11px;color:var(--tx2)">最大3件まで設定。種別を選ぶとブロック幅が自動設定されます。GitHub Pages経由の場合、上の自動スキャンで当日の主要指標が自動反映されます</div>
+        <div style="font-size:11px;color:var(--tx2)">最大5件まで設定。種別を選ぶとブロック幅が自動設定されます。GitHub Pages経由の場合、上の自動スキャンで当日の主要指標が自動反映されます</div>
         <a href="https://www.fxshihyo.com/" target="_blank" style="font-size:10px;font-family:'DM Mono',monospace;color:var(--bl2);text-decoration:none;padding:3px 7px;border:1px solid rgba(74,144,217,0.3);border-radius:5px;white-space:nowrap">📅 経済指標カレンダー</a>
       </div>
       <div id="evtRows">
@@ -314,7 +314,7 @@ body{background:var(--bg);color:var(--tx);font-family:"Noto Sans JP",sans-serif;
 <div id="page-check" class="page active">
   <div id="entryGate"></div>
   <div class="sec">
-    <div class="stl">通貨ペア</div>
+    <div class="stl">通貨ペア <span style="font-size:9px;color:var(--tx3);font-weight:400">（毎朝の主力候補TOP3のみ表示。未取得時は全13ペア）</span></div>
     <div class="pg" id="pairBtns"></div>
     <div id="ckAutoBadge"></div>
   </div>
@@ -391,16 +391,11 @@ body{background:var(--bg);color:var(--tx);font-family:"Noto Sans JP",sans-serif;
       <div class="stl" style="margin-bottom:0">Market Structure Dashboard を見ながら入力</div>
     </div>
     <div class="card">
-      <div style="font-size:9px;color:var(--tx3);margin-bottom:8px">このインジケーター1つだけ開いて、下の4項目を全部入力してから次に進んでください</div>
+      <div style="font-size:9px;color:var(--tx3);margin-bottom:8px">上の「🔄自動取得」ボタンで、OB・FVG・スイング高安・Trend Biasともまとめて自動反映されます</div>
       <div style="margin-bottom:8px">
-        <div class="fl" style="margin-bottom:4px">Trend Bias（Market Context欄のラベル）</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px" id="qMsdBiasBtns">
-          <button data-val="strongbull" onclick="setMsdBias('strongbull')" style="padding:6px 4px;font-size:10px;border-radius:6px;border:1px solid var(--brd2);background:var(--bg);color:var(--tx2);cursor:pointer">🟢🟢 STRONG BULL</button>
-          <button data-val="leanbull" onclick="setMsdBias('leanbull')" style="padding:6px 4px;font-size:10px;border-radius:6px;border:1px solid var(--brd2);background:var(--bg);color:var(--tx2);cursor:pointer">🟢 LEAN BULL</button>
-          <button data-val="neutral" onclick="setMsdBias('neutral')" style="padding:6px 4px;font-size:10px;border-radius:6px;border:1px solid var(--brd2);background:var(--bg);color:var(--tx2);cursor:pointer;grid-column:span 2">⚪ NEUTRAL</button>
-          <button data-val="leanbear" onclick="setMsdBias('leanbear')" style="padding:6px 4px;font-size:10px;border-radius:6px;border:1px solid var(--brd2);background:var(--bg);color:var(--tx2);cursor:pointer">🔴 LEAN BEAR</button>
-          <button data-val="strongbear" onclick="setMsdBias('strongbear')" style="padding:6px 4px;font-size:10px;border-radius:6px;border:1px solid var(--brd2);background:var(--bg);color:var(--tx2);cursor:pointer">🔴🔴 STRONG BEAR</button>
-        </div>
+        <div class="fl" style="margin-bottom:4px">Trend Bias（自動判定・D1+H1トレンドの合成近似値）</div>
+        <div id="qMsdBiasStatus" style="padding:7px 9px;background:var(--bg2);border:1px solid var(--brd2);border-radius:6px;font-size:11px;font-weight:700;text-align:center;color:var(--tx3)">← 自動取得すると表示されます</div>
+        <div id="qMsdBiasBtns" style="display:none"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px">
         <div>
@@ -640,7 +635,7 @@ body{background:var(--bg);color:var(--tx);font-family:"Noto Sans JP",sans-serif;
           <div class="fl" style="display:flex;justify-content:space-between">エントリー価格 <span id="lnEntryAutoTag" style="font-size:8px;color:var(--bl2);display:none">🤖 提案</span></div>
           <input id="lnEntry" type="number" step="any" placeholder="SRライン入力で自動提案" oninput="saveLnDraft();renderLnResult();calcLnSlTp();applyLnSlTpAuto()">
         </div>
-        <div class="fi"><div class="fl">ATR（14, 使用TF・任意） <button onclick="autoFetchLnATR()" style="font-size:8px;padding:2px 6px;background:var(--bl);color:#04101f;border:none;border-radius:4px;font-weight:700;cursor:pointer;margin-left:4px">🔄自動</button></div><input id="lnATR" type="number" step="any" placeholder="例: 28.5" oninput="saveLnDraft();renderLnResult()"><div id="lnATRStatus" style="font-size:8px;color:var(--tx3);margin-top:2px"></div></div>
+        <div class="fi"><div class="fl">ATR（14, 使用TF・任意） <button id="lnATRAutoBtn" onclick="autoFetchLnATR()" style="font-size:8px;padding:2px 6px;background:var(--bl);color:#04101f;border:none;border-radius:4px;font-weight:700;cursor:pointer;margin-left:4px">🔄自動</button></div><input id="lnATR" type="number" step="any" placeholder="例: 28.5" oninput="saveLnDraft();renderLnResult()"><div id="lnATRStatus" style="font-size:8px;color:var(--tx3);margin-top:2px"></div></div>
       </div>
       <input type="hidden" id="lnSL"><input type="hidden" id="lnTP1"><input type="hidden" id="lnTP2">
       <div id="lnAutoFillStatus" style="font-size:9px;padding:5px 8px;background:var(--bl3);border:1px solid rgba(74,144,217,.2);border-radius:6px;color:var(--bl2);display:none;line-height:1.6"></div>
@@ -934,6 +929,22 @@ body{background:var(--bg);color:var(--tx);font-family:"Noto Sans JP",sans-serif;
 <!-- SETTINGS -->
 <div id="page-settings" class="page">
   <div class="sec">
+    <div class="stl">⚠️ 自動化機能の精度について（まとめ）</div>
+    <div class="card" style="border-color:rgba(212,168,67,.3)">
+      <div style="font-size:10px;color:var(--tx2);line-height:1.9">
+        このアプリの自動取得・自動判定機能は、無料APIのデータから機械的に近似計算したものです。<b>有料インジケーターの独自ロジックをそのまま再現したものではありません。</b>以下は特に精度に注意してください：
+        <ul style="margin:6px 0 0 16px;padding:0">
+          <li><b>Order Block（OB）</b>：出来高データが取れない為替では強度%の算出根拠がなく、位置も簡易ロジックによる近似</li>
+          <li><b>Trend Bias（Market Context / MSD）</b>：本家の独自ラベル判定ではなく、D1/H1トレンドを合成した代替値</li>
+          <li><b>MA Distance・Volatility</b>：ATRベースの近似分類（S/M/L、LOW/MEDIUM/HIGH）</li>
+          <li><b>Sweep + CHoCH判定</b>：単純な2本足フラクタルによる機械的検出。ダマシを完全には排除できません</li>
+          <li><b>経済指標カレンダー</b>：非公式の公開JSONを利用。フォーマット変更で停止する可能性あり</li>
+        </ul>
+        いずれも<b>最終判断は必ずチャートを目視確認</b>してから行ってください。
+      </div>
+    </div>
+  </div>
+  <div class="sec">
     <div class="stl">口座管理（複数追加可）</div>
     <div class="card" id="acctList"></div>
     <div class="g2 mt7 mb7">
@@ -1222,6 +1233,11 @@ function initMorningTab(){
   // 自動スキャン（旧📡自動タブ、朝の準備タブに統合済み）
   const keyEl=document.getElementById('tdApiKey');
   if(keyEl)keyEl.value=getTdKey();
+  const keyStatusEl=document.getElementById('tdKeyStatus');
+  const keyAdvEl=document.getElementById('tdKeyAdvanced');
+  const hasKey=!!getTdKey();
+  if(keyStatusEl)keyStatusEl.textContent=hasKey?'Twelve Data APIキー設定済み（裏側で自動使用）':'⚠️ Twelve Data APIキー未設定（このブラウザに入力してください）';
+  if(keyAdvEl&&!hasKey)keyAdvEl.style.display='block';
   const kzEl=document.getElementById('autoKZ');
   if(kzEl)kzEl.textContent=getKillZoneJST();
   try{
@@ -1920,7 +1936,7 @@ let logs=[],checks={},curPair='XAUUSD';
 let accounts=[{id:1,name:'XM Trading Standard',bal:10000},{id:2,name:'Vantage Standard',bal:10000}];
 let activeAcct=1;
 let lockedDir={};
-let evtSlots=[{id:'evt1',type:'',time:''},{id:'evt2',type:'',time:''},{id:'evt3',type:'',time:''}];
+let evtSlots=[{id:'evt1',type:'',time:''},{id:'evt2',type:'',time:''},{id:'evt3',type:'',time:''},{id:'evt4',type:'',time:''},{id:'evt5',type:'',time:''}];
 let csiData={DXY:null,JXY:null,EXY:null,BXY:null,CHFX:null,AXY:null,XAU:null,BTC:null};
 let dxyBias=''; // 'strong'|'weak'|'neutral' — 朝の準備タブで入力。全タブ共通
 let cotBiasByPair={XAUUSD:'',BTCUSD:'',USDJPY:'',EURJPY:'',AUDJPY:'',CHFJPY:'',AUDUSD:'',EURCHF:'',GBPCHF:'',EURUSD:'',GBPUSD:'',GBPJPY:'',USDCHF:''}; // 'long'|'neutral'|'short' — 週1更新・ペア別・全タブ共通
@@ -2208,6 +2224,42 @@ function classifyCotBias(score){
   if(score<-0.08)return'short';
   return'neutral';
 }
+// 経済指標カレンダー（ForexFactory公開JSON・キー不要）。手動ボタン実行時にもGitHub Actionsと同じロジックで取得する
+const FF_CALENDAR_URL='https://cdn-nfs.faireconomy.media/ff_calendar_thisweek.json';
+const RELEVANT_CURRENCIES=new Set(['USD','JPY','EUR','GBP','CHF','AUD']);
+const EVENT_KEYWORD_MAP=[
+  [/CPI/i,'cpi'],[/Non-?Farm|NFP/i,'nfp'],
+  [/FOMC|Fed(eral)?.*(Interest Rate|Funds Rate|Chair|Speaks|Press Conference|Statement)|Powell/i,'fomc'],
+  [/ECB.*(Rate|Refinancing|Press Conference|Speaks)|Lagarde/i,'ecb'],
+  [/BOE.*(Rate|Speaks|Press Conference)|Bank of England.*(Rate|Speaks)|Bailey/i,'boe'],
+  [/BOJ.*(Rate|Press Conference|Speaks)|Bank of Japan.*(Rate|Speaks)|Ueda/i,'boj'],
+  [/PPI/i,'ppi'],[/ADP/i,'adp'],[/PMI/i,'pmi'],[/ISM/i,'ism'],
+  [/Unemployment Claims|Jobless Claims/i,'claims'],[/Retail Sales/i,'retail'],[/GDP/i,'gdp'],
+];
+function matchEventType(title){for(const[re,id]of EVENT_KEYWORD_MAP){if(re.test(title))return id;}return null;}
+async function fetchTodayEventsClient(){
+  const r=await fetchWithTimeout(FF_CALENDAR_URL,15000);
+  if(!r.ok)throw new Error('経済指標カレンダー取得失敗');
+  const events=await r.json();
+  const jstNow=new Date(Date.now()+9*3600*1000);
+  const todayStr=jstNow.toISOString().slice(0,10);
+  const matched=[];
+  for(const e of events){
+    if(!e.date||!e.country)continue;
+    if(!RELEVANT_CURRENCIES.has(e.country))continue;
+    if(e.impact!=='High'&&e.impact!=='Medium')continue;
+    const evtDate=new Date(e.date);
+    const evtJst=new Date(evtDate.getTime()+9*3600*1000);
+    if(evtJst.toISOString().slice(0,10)!==todayStr)continue;
+    const typeId=matchEventType(e.title||'');
+    if(!typeId)continue;
+    const hh=String(evtJst.getUTCHours()).padStart(2,'0');
+    const mm=String(evtJst.getUTCMinutes()).padStart(2,'0');
+    matched.push({type:typeId,time:`${hh}:${mm}`,impact:e.impact});
+  }
+  matched.sort((a,b)=>(a.impact===b.impact?a.time.localeCompare(b.time):(a.impact==='High'?-1:1)));
+  return matched.slice(0,5);
+}
 async function fetchAllCotBias(){
   const nets={};let latestDate=null;
   const keys=Object.keys(COT_KEYWORDS);
@@ -2226,22 +2278,6 @@ async function fetchAllCotBias(){
   });
   try{save();}catch(e){}
   return{count:Object.keys(nets).length,latestDate};
-}
-async function autoFetchCot(){
-  const btn=document.getElementById('cotAutoBtn'),statusEl=document.getElementById('cotAutoStatus');
-  if(btn){btn.disabled=true;btn.style.opacity=.5;}
-  if(statusEl)statusEl.textContent='CFTCから取得中...';
-  try{
-    const res=await fetchAllCotBias();
-    if(statusEl)statusEl.textContent=`最終更新: CFTCレポート日 ${res.latestDate||'?'}（${res.count}/8銘柄取得成功）`;
-    try{
-      const cached=JSON.parse(localStorage.getItem('tcp_auto')||'null');
-      if(cached&&cached.results)renderAutoTable(buildAutoRows(cached.results));
-    }catch(e){}
-  }catch(e){
-    if(statusEl)statusEl.textContent='⚠ 取得失敗: '+(e.message||'')+'（ブラウザのCORS制限の可能性があります）';
-  }
-  if(btn){btn.disabled=false;btn.style.opacity=1;}
 }
 
 // ===== AUTO SIGNAL SCANNER =====
@@ -2263,9 +2299,13 @@ const AUTO_SYMS=[
 ];
 function autoSleep(ms){return new Promise(r=>setTimeout(r,ms));}
 function autoEsc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-const DEFAULT_TD_KEY='f0d54718296547d3a3d6780684000dca'; // ユーザー指定のデフォルトキー。手動入力があればそちらを優先
-function getTdKey(){return(localStorage.getItem('tcp_td_key')||DEFAULT_TD_KEY).trim();}
-function saveTdKey(v){localStorage.setItem('tcp_td_key',(v||'').trim());}
+function getTdKey(){return(localStorage.getItem('tcp_td_key')||'').trim();}
+function saveTdKey(v){
+  const key=(v||'').trim();
+  localStorage.setItem('tcp_td_key',key);
+  const keyStatusEl=document.getElementById('tdKeyStatus');
+  if(keyStatusEl)keyStatusEl.textContent=key?'Twelve Data APIキー設定済み（裏側で自動使用）':'⚠️ Twelve Data APIキー未設定（このブラウザに入力してください）';
+}
 
 async function fetchBinanceKlines(sym,interval,limit){
   const url=`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${interval}&limit=${limit}`;
@@ -2364,10 +2404,10 @@ function judgeRow(tf4,sig,rr){
   const dir=sig.dir;
   const aligned=(dir==='BUY'&&tf4==='BULL')||(dir==='SELL'&&tf4==='BEAR');
   const opposite=(dir==='BUY'&&tf4==='BEAR')||(dir==='SELL'&&tf4==='BULL');
-  if(opposite)return{tier:'—',dir:'WAIT',judge:'除外',note:'4H逆行のため除外',rr:null,tf4};
+  if(opposite)return{tier:'—',dir:'WAIT',judge:'除外',note:'4H逆行のため除外',rr,tf4};
   const tier=aligned?'Tier1':'Tier2';
-  if(!sig.confirmed)return{tier,dir,judge:'除外',note:(dir==='BUY'?'SSL':'BSL')+' sweepのみ・CHoCH未確定',rr:null,tf4};
-  if(!rr||rr<1.2)return{tier,dir,judge:'除外',note:rr?`RRが低すぎる(1:${rr})`:'RR不成立',rr:null,tf4};
+  if(!sig.confirmed)return{tier,dir,judge:'除外',note:(dir==='BUY'?'SSL':'BSL')+' sweepのみ・CHoCH未確定',rr,tf4};
+  if(!rr||rr<1.2)return{tier,dir,judge:'除外',note:rr?`RRが低すぎる(1:${rr})`:'RR不成立',rr,tf4};
   const nearEntry=dir==='BUY'?(sig.lastClose<=sig.chochLevel*1.006):(sig.lastClose>=sig.chochLevel*0.994);
   const label=(dir==='BUY'?'SSL':'BSL')+' sweep+CHoCH';
   if(nearEntry)return{tier,dir,judge:'確定',note:label,rr,tf4};
@@ -2533,29 +2573,34 @@ async function autoFetchLnIndicators(){
 // ライン タブ: ATRのみ自動取得
 async function autoFetchLnATR(){
   const statusEl=document.getElementById('lnATRStatus');
+  const btn=document.getElementById('lnATRAutoBtn');
   const pair=gln('lnPair');
   const sym=AUTO_SYMS.find(s=>s.id===pair);
   if(!sym){if(statusEl)statusEl.textContent='このペアは自動取得非対応です';return;}
+  if(btn){btn.disabled=true;btn.style.opacity=.5;}
   if(statusEl)statusEl.textContent='取得中...';
   try{
     let h1;
     if(sym.src==='binance')h1=await fetchBinanceKlines(sym.bsym,'1h',60);
     else h1=await fetchTDKlines(sym.tsym,'1h',60,getTdKey());
     const atr=calcATR(h1,14);
-    if(atr==null){if(statusEl)statusEl.textContent='データ不足で計算できませんでした';return;}
+    if(atr==null){if(statusEl)statusEl.textContent='データ不足で計算できませんでした';if(btn){btn.disabled=false;btn.style.opacity=1;}return;}
     const el=document.getElementById('lnATR');
     if(el){el.value=atr.toFixed(pairDecimals(pair));saveLnDraft();renderLnResult();}
     if(statusEl)statusEl.textContent='H1 ATR(14)を反映しました';
   }catch(e){
     if(statusEl)statusEl.textContent='取得失敗: '+(e.message||'');
   }
+  if(btn){btn.disabled=false;btn.style.opacity=1;}
 }
 // ライン タブ: SR/ブレイクライン価格の参考値（自動上書きはしない。押した時だけ近傍の主要レベルを表示）
 async function showLnLevelHints(inputId,hintId){
   const hintEl=document.getElementById(hintId);
+  const btn=(typeof event!=='undefined'&&event)?event.currentTarget:null;
   const pair=gln('lnPair');
   const sym=AUTO_SYMS.find(s=>s.id===pair);
   if(!sym){if(hintEl)hintEl.textContent='このペアは自動取得非対応です';return;}
+  if(btn){btn.disabled=true;btn.style.opacity=.5;}
   if(hintEl)hintEl.textContent='取得中...';
   try{
     let d1;
@@ -2575,13 +2620,14 @@ async function showLnLevelHints(inputId,hintId){
     }).sort((a,b)=>b.prom-a.prom).slice(0,3);
     const dec=pairDecimals(pair);
     const levels=[...prom(oldHighs,true),...prom(oldLows,false)].sort((a,b)=>Math.abs(a.price-last)-Math.abs(b.price-last)).slice(0,3);
-    if(!levels.length){if(hintEl)hintEl.textContent='参考レベルが見つかりませんでした';return;}
+    if(!levels.length){if(hintEl)hintEl.textContent='参考レベルが見つかりませんでした';if(btn){btn.disabled=false;btn.style.opacity=1;}return;}
     if(hintEl){
       hintEl.innerHTML='D1主要レベル(参考・クリックで入力): '+levels.map(l=>`<span onclick="document.getElementById('${inputId}').value=${l.price.toFixed(dec)};document.getElementById('${inputId}').dispatchEvent(new Event('input'));" style="cursor:pointer;text-decoration:underline;color:var(--bl2);margin-right:6px">${l.price.toFixed(dec)}</span>`).join('<span style="color:var(--tx3)">・</span>');
     }
   }catch(e){
     if(hintEl)hintEl.textContent='取得失敗: '+(e.message||'');
   }
+  if(btn){btn.disabled=false;btn.style.opacity=1;}
 }
 // クイック タブ: Multi-Symbol Trend Dashboard 短期足(M15/H1) 自動取得
 async function autoFetchQuickStf(){
@@ -3042,8 +3088,8 @@ async function tryLoadServerScan(){
     if(statusEl)statusEl.textContent='🌐 サーバー自動更新: '+new Date(data.ts).toLocaleString('ja-JP')+'（GitHub Actionsが自動取得）';
     // 経済指標カレンダー（ForexFactory公開JSON経由・当日分のみ）
     if(Array.isArray(data.todayEvents)&&data.todayEvents.length){
-      evtSlots=data.todayEvents.slice(0,3).map((e,i)=>({id:'evt'+(i+1),type:e.type,time:e.time}));
-      while(evtSlots.length<3)evtSlots.push({id:'evt'+(evtSlots.length+1),type:'',time:''});
+      evtSlots=data.todayEvents.slice(0,5).map((e,i)=>({id:'evt'+(i+1),type:e.type,time:e.time}));
+      while(evtSlots.length<5)evtSlots.push({id:'evt'+(evtSlots.length+1),type:'',time:''});
       try{save();}catch(e){}
       if(typeof renderEvtRows==='function')renderEvtRows();
     }
@@ -3059,6 +3105,11 @@ async function runAutoSignal(){
   renderAutoTable(buildAutoRows(results));
   const cryptoSyms=AUTO_SYMS.filter(s=>s.src==='binance');
   const fxSyms=AUTO_SYMS.filter(s=>s.src==='td');
+  // 進捗表示用: TD呼び出しは概ね8秒間隔なので、残り回数から目安時間を逆算する
+  const tdSyms=AUTO_SYMS.filter(s=>s.src==='td').length;
+  const estTotalCalls=tdSyms*2+tdSyms*2; // メインループ(H4+H1) + トレンド信号(D1+W1)
+  let callsDone=0;
+  const eta=()=>{const remain=Math.max(0,estTotalCalls-callsDone);const min=Math.ceil(remain*8/60);return min>0?`（残り約${min}分）`:'';};
   statusEl.textContent='暗号資産を取得中...';
   const h4Cache={};
   await Promise.all(cryptoSyms.map(async s=>{
@@ -3077,11 +3128,13 @@ async function runAutoSignal(){
   }else{
     for(let i=0;i<fxSyms.length;i++){
       const s=fxSyms[i];
-      statusEl.textContent=`為替を取得中 (${i+1}/${fxSyms.length}: ${s.id})...レート制限のため間隔を空けています`;
+      statusEl.textContent=`為替を取得中 (${i+1}/${fxSyms.length}: ${s.id})...レート制限のため間隔を空けています${eta()}`;
       try{
         const h4=await fetchTDKlines(s.tsym,'4h',250,apikey);
+        callsDone++;
         await autoSleep(8000);
         const h1=await fetchTDKlines(s.tsym,'1h',100,apikey);
+        callsDone++;
         results[s.id]=analyzeSymbol(h4,h1);
         h4Cache[s.id]=h4;
       }catch(e){
@@ -3093,12 +3146,15 @@ async function runAutoSignal(){
   }
   // トレンド信号(緑3/2/1/0)は全13銘柄で計算し、上位3つを「今日の主力候補」として抽出
   const trendGreen={};
-  statusEl.textContent='トレンド信号(H4/D1/W1)を計算中（全13銘柄）...';
-  for(const sym of AUTO_SYMS){
+  statusEl.textContent=`トレンド信号(H4/D1/W1)を計算中（全13銘柄）...${eta()}`;
+  for(let ti=0;ti<AUTO_SYMS.length;ti++){
+    const sym=AUTO_SYMS[ti];
     const symId=sym.id;
     if(!h4Cache[symId])continue;
     if(sym.src==='td')await autoSleep(8000);
     try{trendGreen[symId]=await fetchTrendGreenCount(sym,h4Cache[symId]);}catch(e){}
+    if(sym.src==='td')callsDone+=2;
+    statusEl.textContent=`トレンド信号(H4/D1/W1)を計算中 (${ti+1}/${AUTO_SYMS.length})...${eta()}`;
   }
   const top3=AUTO_SYMS.map(s=>s.id).filter(id=>trendGreen[id]!=null).sort((a,b)=>{
     if(trendGreen[b]!==trendGreen[a])return trendGreen[b]-trendGreen[a];
@@ -3112,17 +3168,29 @@ async function runAutoSignal(){
   try{
     const cotRes=await fetchAllCotBias();
     cotNote=`・COT ${cotRes.count}/8銘柄(${cotRes.latestDate||'?'})`;
-    const cotStatusEl=document.getElementById('cotAutoStatus');
-    if(cotStatusEl)cotStatusEl.textContent=`最終更新: CFTCレポート日 ${cotRes.latestDate||'?'}（${cotRes.count}/8銘柄取得成功）`;
   }catch(e){
     cotNote='・COT取得失敗';
-    const cotStatusEl=document.getElementById('cotAutoStatus');
-    if(cotStatusEl)cotStatusEl.textContent='⚠ 取得失敗: '+(e.message||'');
+  }
+  // 経済指標カレンダー（ForexFactory公開JSON）。ブラウザから直接叩くためCORSでブロックされる可能性があり、
+  // その場合は静かに諦めて「本日の指標管理」は空のまま（GitHub Actions経由なら確実に取得できる）
+  let evtNote='';
+  statusEl.textContent='経済指標カレンダーを取得中...';
+  try{
+    const events=await fetchTodayEventsClient();
+    if(events.length){
+      evtSlots=events.map((e,i)=>({id:'evt'+(i+1),type:e.type,time:e.time}));
+      while(evtSlots.length<5)evtSlots.push({id:'evt'+(evtSlots.length+1),type:'',time:''});
+      try{save();}catch(e){}
+      if(typeof renderEvtRows==='function')renderEvtRows();
+      evtNote='・指標'+events.length+'件';
+    }
+  }catch(e){
+    evtNote='・指標取得失敗(ブラウザのCORS制限の可能性あり。GitHub Pages経由なら確実に取得できます)';
   }
   const now=new Date();
   try{applyAutoDerivedFields(results,trendGreen,top3);}catch(e){}
   renderAutoTable(buildAutoRows(results));
-  statusEl.textContent='最終更新: '+now.toLocaleString('ja-JP')+'（週足%・通貨強弱・トレンド信号'+cotNote+' を朝の準備タブに反映済み）';
+  statusEl.textContent='最終更新: '+now.toLocaleString('ja-JP')+'（週足%・通貨強弱・トレンド信号'+cotNote+evtNote+' を朝の準備タブに反映済み）';
   try{localStorage.setItem('tcp_auto',JSON.stringify({results,ts:now.getTime()}));}catch(e){}
   btn.disabled=false;btn.style.opacity=1;
   updateAutoSummary(results);
@@ -3130,8 +3198,11 @@ async function runAutoSignal(){
 
 // ===== CHECKLIST =====
 function renderCheck(){
-  // pair buttons
-  document.getElementById('pairBtns').innerHTML=PAIRS.map(id=>`<button class="pb${id===curPair?' active':''}" onclick="selPair('${id}')">${id}</button>`).join('');
+  // pair buttons: 毎朝の主力候補TOP3のみ表示（未取得時は全13ペアにフォールバック）
+  const top3=getMorningTop3();
+  const checkPairs=top3.length?top3.map(t=>t.pair):PAIRS;
+  if(top3.length&&!checkPairs.includes(curPair)){curPair=checkPairs[0];checks={};save();}
+  document.getElementById('pairBtns').innerHTML=checkPairs.map(id=>`<button class="pb${id===curPair?' active':''}" onclick="selPair('${id}')">${id}</button>`).join('');
   const autoBadgeEl=document.getElementById('ckAutoBadge');
   if(autoBadgeEl){const chip=autoSignalChipHtml(curPair);autoBadgeEl.innerHTML=chip?`<div style="margin-top:6px">${chip}</div>`:'';}
 
@@ -3256,10 +3327,44 @@ function renderPhaseInputs(inputs,phNum,pair){
     </div>`;
   });
   const gridCols=inputs.length===1?'1fr':inputs.length<=2?'1fr 1fr':'1fr 1fr';
+  const hasMsd=inputs.some(i=>i.id==='cSMC_main'||i.id==='cFVG'||i.id==='cSwingLow'||i.id==='cSwingHigh');
+  const autoBtnHtml=hasMsd?`<div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;flex-wrap:wrap">
+      <button id="cMsdAutoBtn_${pair}" onclick="autoFetchCheckMsd('${pair}')" style="font-size:9px;padding:5px 8px;background:var(--bl);color:#04101f;border:none;border-radius:5px;font-weight:700;cursor:pointer;white-space:nowrap">🔄 OB近似・FVG・スイング高安を自動取得</button>
+      <div id="cMsdAutoStatus_${pair}" style="font-size:8px;color:var(--tx3)">OB近似値は精度低めなので目視確認推奨</div>
+    </div>`:'';
   return`<div style="margin-top:8px;padding:8px 10px;background:var(--bg2);border-top:1px solid var(--brd);border-radius:0 0 6px 6px">
     <div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--tx3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em">📝 確認した値を入力 → ⑥のSL/TP計算に自動反映</div>
+    ${autoBtnHtml}
     <div style="display:grid;grid-template-columns:${gridCols};gap:6px">${rows.join('')}</div>
   </div>`;
+}
+async function autoFetchCheckMsd(pair){
+  const btn=document.getElementById('cMsdAutoBtn_'+pair),statusEl=document.getElementById('cMsdAutoStatus_'+pair);
+  const dir=detectDir();
+  if(!dir||dir==='CONFLICT'){if(statusEl)statusEl.textContent='①でトレンド方向を確定させてから使用してください';return;}
+  const sym=AUTO_SYMS.find(s=>s.id===pair);
+  if(!sym){if(statusEl)statusEl.textContent='このペアは自動取得非対応です';return;}
+  if(btn){btn.disabled=true;btn.style.opacity=.5;}
+  if(statusEl)statusEl.textContent='取得中...';
+  try{
+    let h1;
+    if(sym.src==='binance')h1=await fetchBinanceKlines(sym.bsym,'1h',60);
+    else h1=await fetchTDKlines(sym.tsym,'1h',60,getTdKey());
+    const dec=pairDecimals(pair);
+    const{highs,lows}=findSwings(h1.slice(-60),2);
+    const setVal=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null){el.value=v.toFixed(dec);savePhasInput(id);}};
+    if(highs.length)setVal('cSwingHigh',highs[highs.length-1].price);
+    if(lows.length)setVal('cSwingLow',lows[lows.length-1].price);
+    const fvg=findRecentFVG(h1.slice(-40),dir);
+    if(fvg!=null)setVal('cFVG',fvg);
+    const ob=findSimpleOB(h1.slice(-40),dir);
+    if(ob!=null)setVal('cSMC_main',ob);
+    calcInline();
+    if(statusEl)statusEl.textContent='自動反映しました（OBは近似値。目視確認推奨）';
+  }catch(e){
+    if(statusEl)statusEl.textContent='取得失敗: '+(e.message||'');
+  }
+  if(btn){btn.disabled=false;btn.style.opacity=1;}
 }
 // ===== ①フェーズ専用: 3TF自動方向ロックUI（チェックタブ用） =====
 function getC3tfState(pair){
@@ -3317,6 +3422,10 @@ function renderTf3AutoUI(pair){
 
   return`<div style="margin-top:8px;padding:10px 12px;background:var(--bg2);border-top:1px solid var(--brd);border-radius:0 0 6px 6px">
     <div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--tx3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">\ud83d\udcdd 各TFの方向・Trend%を入力 \u2192 自動でBUY/SELLロック</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+      <button id="c3tfAutoBtn_${pair}" onclick="autoFetchC3tf('${pair}')" style="font-size:9px;padding:5px 8px;background:var(--bl);color:#04101f;border:none;border-radius:5px;font-weight:700;cursor:pointer;white-space:nowrap">🔄 M15/H1/H4を自動判定</button>
+      <div id="c3tfAutoStatus_${pair}" style="font-size:8px;color:var(--tx3)">自動ロック後も手動タップで上書きできます</div>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
       ${tfBtn('15','15M')}${tfBtn('1h','1H')}${tfBtn('4h','4H')}
     </div>
@@ -3324,6 +3433,42 @@ function renderTf3AutoUI(pair){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px">${biasBtns}</div>
     <div id="c3tfResult_${pair}" style="padding:8px 10px;background:var(--bg);border:1px solid var(--brd2);border-radius:7px;text-align:center;font-size:12px;font-weight:700;color:var(--tx3)">\u2190 入力すると自動でBUY/SELL方向がロックされます</div>
   </div>`;
+}
+async function autoFetchC3tf(pair){
+  const btn=document.getElementById('c3tfAutoBtn_'+pair),statusEl=document.getElementById('c3tfAutoStatus_'+pair);
+  const sym=AUTO_SYMS.find(s=>s.id===pair);
+  if(!sym){if(statusEl)statusEl.textContent='このペアは自動取得非対応です';return;}
+  if(btn){btn.disabled=true;btn.style.opacity=.5;}
+  if(statusEl)statusEl.textContent='取得中...';
+  try{
+    let m15,h1,h4;
+    if(sym.src==='binance'){
+      m15=await fetchBinanceKlines(sym.bsym,'15m',60);
+      h1=await fetchBinanceKlines(sym.bsym,'1h',60);
+      h4=await fetchBinanceKlines(sym.bsym,'4h',60);
+    }else{
+      const apikey=getTdKey();
+      m15=await fetchTDKlines(sym.tsym,'15min',60,apikey);
+      await autoSleep(8000);
+      h1=await fetchTDKlines(sym.tsym,'1h',60,apikey);
+      await autoSleep(8000);
+      h4=await fetchTDKlines(sym.tsym,'4h',60,apikey);
+    }
+    const toDir=(t)=>t==='BULL'?1:t==='BEAR'?-1:0;
+    const d15=toDir(trendBias(m15)),d1h=toDir(trendBias(h1)),d4h=toDir(trendBias(h4));
+    const st=getC3tfState(pair);
+    st.dirs={'15':d15,'1h':d1h,'4h':d4h};
+    st.pcts={'15':d15?'70':'','1h':d1h?'70':'','4h':d4h?'70':''};
+    st.bias=classifyTrendBias5(trendBias(h4),trendBias(h1));
+    saveC3tfState(pair,st);
+    renderCheck();
+    const freshStatusEl=document.getElementById('c3tfAutoStatus_'+pair);
+    if(freshStatusEl)freshStatusEl.textContent='自動判定を反映しました（Trend%は仮の目安値70%。必要ならタップで調整・上書きしてください）';
+  }catch(e){
+    if(statusEl)statusEl.textContent='取得失敗: '+(e.message||'');
+  }
+  const freshBtn=document.getElementById('c3tfAutoBtn_'+pair);
+  if(freshBtn){freshBtn.disabled=false;freshBtn.style.opacity=1;}
 }
 
 function setC3tfDir(tf,dir){
@@ -4329,6 +4474,13 @@ function setMsdBias(val){
       b.style.color=isActive?(isBull?'var(--gn2)':val==='neutral'?'var(--tx)':'var(--rd2)'):'var(--tx2)';
       b.style.borderColor=isActive?(isBull?'rgba(61,158,114,.5)':val==='neutral'?'var(--brd2)':'rgba(196,80,80,.5)'):'var(--brd2)';
     });
+  }
+  const statusEl=document.getElementById('qMsdBiasStatus');
+  if(statusEl&&val){
+    const labels={strongbull:'🟢🟢 STRONG BULL',leanbull:'🟢 LEAN BULL',neutral:'⚪ NEUTRAL',leanbear:'🔴 LEAN BEAR',strongbear:'🔴🔴 STRONG BEAR'};
+    statusEl.textContent=labels[val]||val;
+    statusEl.style.color=val.includes('bull')?'var(--gn2)':val==='neutral'?'var(--tx)':'var(--rd2)';
+    statusEl.style.background=val.includes('bull')?'var(--gn3)':val==='neutral'?'var(--bg2)':'var(--rd3)';
   }
   saveQuickDraft();
   calcTfTrend();
