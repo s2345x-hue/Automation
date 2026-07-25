@@ -2,8 +2,8 @@ name: Morning Scan
 
 on:
   schedule:
-    # 毎朝 JST 6:30 に実行（UTC 21:30、前日扱い）。時間を変えたい場合はここを調整
-    - cron: '30 21 * * *'
+    # 毎朝 JST 6:00 に実行（UTC 21:00、前日扱い）。時間を変えたい場合はここを調整
+    - cron: '0 21 * * *'
   workflow_dispatch: {}  # Actionsタブから手動実行もできるようにする
 
 permissions:
