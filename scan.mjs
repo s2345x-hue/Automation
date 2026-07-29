@@ -251,6 +251,85 @@ function getKillZoneJST() {
 }
 
 // ---------- メイン ----------
+// ---------- ライン タブ用: ペア選定スキャン（トレンド・SR近接・RSI）11ペア ----------
+const LN_SCAN_PAIRS = AUTO_SYMS.map((s) => s.id).filter((id) => id !== 'XAUUSD' && id !== 'BTCUSD');
+function classifyLnTrend(d1trend, w1trend) {
+  if (d1trend === 'BULL' && w1trend === 'BULL') return 'up2';
+  if (d1trend === 'BEAR' && w1trend === 'BEAR') return 'down2';
+  if (d1trend === 'BULL' || w1trend === 'BULL') return 'up';
+  if (d1trend === 'BEAR' || w1trend === 'BEAR') return 'down';
+  return 'range';
+}
+function lnSrProximity(candles) {
+  if (!candles || candles.length < 20) return '';
+  const { highs, lows } = findSwings(candles, 2);
+  const cutoff = candles.length - 10;
+  const oldHighs = highs.filter((h) => h.i < cutoff), oldLows = lows.filter((l) => l.i < cutoff);
+  if (!oldHighs.length || !oldLows.length) return '';
+  const promHighs = oldHighs.map((h) => {
+    const before = oldLows.filter((l) => l.i < h.i).pop();
+    const after = oldLows.find((l) => l.i > h.i);
+    const refs = [before, after].filter(Boolean).map((l) => l.price);
+    const ref = refs.length ? Math.min(...refs) : h.price * 0.98;
+    return { price: h.price, prom: h.price - ref };
+  }).sort((a, b) => b.prom - a.prom).slice(0, 2);
+  const promLows = oldLows.map((l) => {
+    const before = oldHighs.filter((h) => h.i < l.i).pop();
+    const after = oldHighs.find((h) => h.i > l.i);
+    const refs = [before, after].filter(Boolean).map((h) => h.price);
+    const ref = refs.length ? Math.max(...refs) : l.price * 1.02;
+    return { price: l.price, prom: ref - l.price };
+  }).sort((a, b) => b.prom - a.prom).slice(0, 2);
+  const last = candles[candles.length - 1].c;
+  let nearestPct = Infinity;
+  promHighs.forEach((h) => { nearestPct = Math.min(nearestPct, Math.abs(last - h.price) / last); });
+  promLows.forEach((l) => { nearestPct = Math.min(nearestPct, Math.abs(last - l.price) / last); });
+  if (nearestPct === Infinity) return '';
+  if (nearestPct < 0.0025) return 'strong';
+  if (nearestPct < 0.007) return 'medium';
+  return 'none';
+}
+function calcRSI(closes, period) {
+  period = period || 14;
+  if (!closes || closes.length < period + 1) return null;
+  let gains = 0, losses = 0;
+  for (let i = 1; i <= period; i++) { const d = closes[i] - closes[i - 1]; if (d >= 0) gains += d; else losses -= d; }
+  let avgGain = gains / period, avgLoss = losses / period;
+  for (let i = period + 1; i < closes.length; i++) {
+    const d = closes[i] - closes[i - 1], gain = d > 0 ? d : 0, loss = d < 0 ? -d : 0;
+    avgGain = (avgGain * (period - 1) + gain) / period;
+    avgLoss = (avgLoss * (period - 1) + loss) / period;
+  }
+  if (avgLoss === 0) return 100;
+  const rs = avgGain / avgLoss;
+  return +(100 - (100 / (1 + rs))).toFixed(1);
+}
+async function fetchLnScan() {
+  const lnScan = {};
+  for (let i = 0; i < LN_SCAN_PAIRS.length; i++) {
+    const pair = LN_SCAN_PAIRS[i];
+    const sym = AUTO_SYMS.find((s) => s.id === pair);
+    console.log(`  ラインスキャン [${i + 1}/${LN_SCAN_PAIRS.length}] ${pair}`);
+    try {
+      const d1 = await fetchTDKlines(sym.tsym, '1day', 120);
+      await sleep(8000);
+      const w1 = await fetchTDKlines(sym.tsym, '1week', 60);
+      const trend = classifyLnTrend(trendBias(d1), trendBias(w1));
+      const srD1 = lnSrProximity(d1), srW1 = lnSrProximity(w1);
+      const order = { strong: 0, medium: 1, none: 2, '': 3 };
+      const sr = order[srD1] <= order[srW1] ? srD1 : srW1;
+      await sleep(8000);
+      const h1 = await fetchTDKlines(sym.tsym, '1h', 60);
+      const rsi = calcRSI(h1.map((c) => c.c), 14);
+      lnScan[pair] = { trend, sr, pattern: '', rsi: rsi != null ? String(rsi) : '' };
+    } catch (e) {
+      lnScan[pair] = { trend: '', sr: '', pattern: '', rsi: '', error: e.message };
+    }
+    if (i < LN_SCAN_PAIRS.length - 1) await sleep(8000);
+  }
+  return lnScan;
+}
+
 async function main() {
   if (!TD_API_KEY) {
     console.error('TD_API_KEY が設定されていません（GitHub Secretsを確認してください）');
@@ -369,6 +448,15 @@ async function main() {
     console.error('経済指標カレンダー取得エラー:', e.message);
   }
 
+  // ラインタブ用ペア選定スキャン（11ペア・トレンド/SR近接/RSI）
+  let lnScan = {};
+  console.log('ラインタブ用スキャンを取得中（11ペア）...');
+  try {
+    lnScan = await fetchLnScan();
+  } catch (e) {
+    console.error('ラインタブ用スキャン取得エラー:', e.message);
+  }
+
   const output = {
     ts: Date.now(),
     generatedAt: new Date().toISOString(),
@@ -381,6 +469,7 @@ async function main() {
     csiData,
     dxyBias,
     todayEvents,
+    lnScan,
   };
 
   await mkdir(path.dirname(OUT_PATH), { recursive: true });

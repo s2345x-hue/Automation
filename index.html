@@ -222,7 +222,7 @@ body{background:var(--bg);color:var(--tx);font-family:"Noto Sans JP",sans-serif;
 
   <div class="sec">
     <button id="autoRunBtn" onclick="runAutoSignal()" style="width:100%;padding:11px;background:var(--gd);color:#1a1000;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer">🔄 全銘柄スキャン実行</button>
-    <div id="autoStatus" style="font-size:10px;color:var(--tx3);margin-top:6px;text-align:center">未実行（13銘柄＋トレンド信号用のD1/W1取得を含め、レート制限で約3〜4分かかります）</div>
+    <div id="autoStatus" style="font-size:10px;color:var(--tx3);margin-top:6px;text-align:center">未実行（13銘柄のシグナル・トレンド信号・ラインタブ用スキャンまで全部まとめて実行。レート制限のため約8〜12分かかります）</div>
   </div>
 
   <div class="sec">
@@ -320,8 +320,8 @@ body{background:var(--bg);color:var(--tx);font-family:"Noto Sans JP",sans-serif;
   </div>
   <div id="lockBanner"></div>
   <div class="sec" style="margin-top:6px;margin-bottom:0">
-    <button id="ckAutoBtn" onclick="autoFetchCheckIndicators()" style="width:100%;padding:9px;background:var(--bl);color:#04101f;border:none;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer">🔄 ②〜⑤の自動判定項目を一括チェック（ATR/現在値/Killzone/Structure/ChoCh/BOS/MACD/Volatility/MA距離）</button>
-    <div id="ckAutoStatus" style="font-size:9px;color:var(--tx3);margin-top:5px;text-align:center">①でトレンド方向を確定させてから使用してください</div>
+    <button id="ckAutoBtn" onclick="autoFetchCheckIndicators()" style="width:100%;padding:9px;background:var(--bl);color:#04101f;border:none;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer">🔄 ①〜⑤の自動判定項目を一括チェック（方向ロック・ATR/現在値/Killzone/Structure/ChoCh/BOS/MACD/Volatility/MA距離）</button>
+    <div id="ckAutoStatus" style="font-size:9px;color:var(--tx3);margin-top:5px;text-align:center">①の方向ロックも自動で試みます（弱いトレンドの場合はロックできないことがあります）</div>
     <label style="display:flex;align-items:center;gap:5px;margin-top:6px;font-size:9px;color:var(--tx3);cursor:pointer"><input type="checkbox" id="ckAutoRefreshToggle" onchange="toggleCkAutoRefresh(this.checked)" style="cursor:pointer">このタブを開いている間、選択中ペアを15分ごとに自動更新（①確定後のみ）</label>
   </div>
   <div class="pw">
@@ -2889,12 +2889,23 @@ function checkBOS(candles,dir){
 async function autoFetchCheckIndicators(){
   const btn=document.getElementById('ckAutoBtn'),statusEl=document.getElementById('ckAutoStatus');
   const pair=curPair;
-  const dir=detectDir();
-  if(!dir||dir==='CONFLICT'){if(statusEl)statusEl.textContent='①でトレンド方向を確定させてから使用してください';return;}
+  let dir=detectDir();
+  if(!dir){
+    if(statusEl)statusEl.textContent='①の方向がまだ未確定のため、まず自動判定を試みます...';
+    if(btn){btn.disabled=true;btn.style.opacity=.5;}
+    try{await autoFetchC3tf(pair);}catch(e){}
+    dir=detectDir();
+    if(!dir){
+      if(statusEl)statusEl.textContent='①のトレンドが不明瞭で自動ロックできませんでした。①を開いて手動でご確認ください';
+      if(btn){btn.disabled=false;btn.style.opacity=1;}
+      return;
+    }
+  }
+  if(dir==='CONFLICT'){if(statusEl)statusEl.textContent='①でBUY/SELL両方が選択されています。どちらか一方に修正してください';return;}
   const sym=AUTO_SYMS.find(s=>s.id===pair);
   if(!sym){if(statusEl)statusEl.textContent='このペアは自動取得非対応です';return;}
   if(btn){btn.disabled=true;btn.style.opacity=.5;}
-  if(statusEl)statusEl.textContent='取得中...';
+  if(statusEl)statusEl.textContent='②〜⑤を取得中...';
   try{
     let h1;
     if(sym.src==='binance'){
@@ -3093,6 +3104,15 @@ async function tryLoadServerScan(){
       try{save();}catch(e){}
       if(typeof renderEvtRows==='function')renderEvtRows();
     }
+    // ラインタブのペア選定スキャン（トレンド・SR近接・RSI・11ペア）
+    if(data.lnScan&&typeof lnScan!=='undefined'){
+      Object.keys(data.lnScan).forEach(pair=>{
+        if(lnScan[pair])lnScan[pair]={trend:data.lnScan[pair].trend||'',sr:data.lnScan[pair].sr||'',pattern:lnScan[pair].pattern||'',rsi:data.lnScan[pair].rsi||''};
+      });
+      try{saveLnScan();}catch(e){}
+      if(typeof renderLnScanGrid==='function')renderLnScanGrid();
+      if(typeof renderLnScanResult==='function')renderLnScanResult();
+    }
   }catch(e){
     // data/scan.json が無い・file://で開いている等は静かに無視して手動ボタンのフローに任せる
   }
@@ -3171,26 +3191,19 @@ async function runAutoSignal(){
   }catch(e){
     cotNote='・COT取得失敗';
   }
-  // 経済指標カレンダー（ForexFactory公開JSON）。ブラウザから直接叩くためCORSでブロックされる可能性があり、
-  // その場合は静かに諦めて「本日の指標管理」は空のまま（GitHub Actions経由なら確実に取得できる）
-  let evtNote='';
-  statusEl.textContent='経済指標カレンダーを取得中...';
-  try{
-    const events=await fetchTodayEventsClient();
-    if(events.length){
-      evtSlots=events.map((e,i)=>({id:'evt'+(i+1),type:e.type,time:e.time}));
-      while(evtSlots.length<5)evtSlots.push({id:'evt'+(evtSlots.length+1),type:'',time:''});
-      try{save();}catch(e){}
-      if(typeof renderEvtRows==='function')renderEvtRows();
-      evtNote='・指標'+events.length+'件';
-    }
-  }catch(e){
-    evtNote='・指標取得失敗(ブラウザのCORS制限の可能性あり。GitHub Pages経由なら確実に取得できます)';
+  // 経済指標カレンダー（ForexFactory公開JSON）はブラウザから直接叩くとCORSでブロックされることが確認できたため、
+  // 手動ボタンでの取得は行わない。GitHub Actions経由（サーバー側実行）でのみ確実に取得できる
+  const evtNote='（経済指標はGitHub Pages経由でのみ自動反映されます）';
+  // ラインタブのペア選定スキャン（①トレンド②SR近接③RSI・11ペア）もまとめて実行
+  let lnNote='';
+  if(apikey){
+    statusEl.textContent='ラインタブ用スキャン(11ペア・トレンド/SR/RSI)を取得中...';
+    try{await autoFetchLnScan();lnNote='・ラインスキャン完了';}catch(e){lnNote='・ラインスキャン失敗';}
   }
   const now=new Date();
   try{applyAutoDerivedFields(results,trendGreen,top3);}catch(e){}
   renderAutoTable(buildAutoRows(results));
-  statusEl.textContent='最終更新: '+now.toLocaleString('ja-JP')+'（週足%・通貨強弱・トレンド信号'+cotNote+evtNote+' を朝の準備タブに反映済み）';
+  statusEl.textContent='最終更新: '+now.toLocaleString('ja-JP')+'（週足%・通貨強弱・トレンド信号'+cotNote+lnNote+evtNote+' を反映済み）';
   try{localStorage.setItem('tcp_auto',JSON.stringify({results,ts:now.getTime()}));}catch(e){}
   btn.disabled=false;btn.style.opacity=1;
   updateAutoSummary(results);
@@ -3429,8 +3442,8 @@ function renderTf3AutoUI(pair){
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
       ${tfBtn('15','15M')}${tfBtn('1h','1H')}${tfBtn('4h','4H')}
     </div>
-    <div style="font-size:9px;color:var(--tx3);margin-bottom:5px">Market Structure Dashboard: Trend Bias欄のラベルを選択</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px">${biasBtns}</div>
+    <div style="font-size:9px;color:var(--tx3);margin-bottom:5px">Trend Bias（自動判定・D1+H1トレンドの合成近似値）</div>
+    <div id="c3tfBiasStatus_${pair}" style="padding:6px 9px;background:${bias?(bias.includes('bull')?'var(--gn3)':bias==='neutral'?'var(--bg2)':'var(--rd3)'):'var(--bg2)'};border:1px solid var(--brd2);border-radius:6px;font-size:11px;font-weight:700;text-align:center;color:${bias?(bias.includes('bull')?'var(--gn2)':bias==='neutral'?'var(--tx)':'var(--rd2)'):'var(--tx3)'};margin-bottom:8px">${bias?(BIAS_OPTS.find(o=>o.v===bias)||{}).l:'← 自動判定すると表示されます'}</div>
     <div id="c3tfResult_${pair}" style="padding:8px 10px;background:var(--bg);border:1px solid var(--brd2);border-radius:7px;text-align:center;font-size:12px;font-weight:700;color:var(--tx3)">\u2190 入力すると自動でBUY/SELL方向がロックされます</div>
   </div>`;
 }
