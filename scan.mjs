@@ -61,8 +61,17 @@ function matchEventType(title) {
   return null;
 }
 async function fetchTodayEvents() {
-  const r = await fetchWithTimeout(FF_CALENDAR_URL, 15000);
-  if (!r.ok) throw new Error('経済指標カレンダー取得失敗');
+  let r;
+  try{
+    r = await fetchWithTimeout(FF_CALENDAR_URL, 15000, {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      'Accept': 'application/json,text/plain,*/*',
+      'Referer': 'https://www.forexfactory.com/',
+    });
+  }catch(e){
+    throw new Error('経済指標カレンダー取得失敗(接続不可): '+(e.cause?.message||e.message));
+  }
+  if (!r.ok) throw new Error('経済指標カレンダー取得失敗(HTTP '+r.status+')');
   const events = await r.json();
   const jstNow = new Date(Date.now() + 9 * 3600 * 1000);
   const todayStr = jstNow.toISOString().slice(0, 10);
@@ -87,11 +96,11 @@ async function fetchTodayEvents() {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function fetchWithTimeout(url, ms = 15000) {
+async function fetchWithTimeout(url, ms = 15000, extraHeaders) {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), ms);
   try {
-    return await fetch(url, { signal: controller.signal });
+    return await fetch(url, { signal: controller.signal, headers: extraHeaders || {} });
   } finally {
     clearTimeout(t);
   }
