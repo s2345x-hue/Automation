@@ -1,0 +1,252 @@
+{
+  "ts": 1792627590931,
+  "generatedAt": "2026-10-22T00:06:30.931Z",
+  "killZoneAtGenTime": "東京 KZ",
+  "results": {
+    "XAUUSD": {
+      "tier": "—",
+      "dir": "WAIT",
+      "judge": "除外",
+      "note": "4H逆行のため除外",
+      "rr": 0.6,
+      "tf4": "BEAR",
+      "weeklyPct": 0.36
+    },
+    "BTCUSD": {
+      "tier": "—",
+      "dir": "WAIT",
+      "judge": "除外",
+      "note": "1Hもレンジ",
+      "rr": null,
+      "tf4": "BULL",
+      "weeklyPct": 3.1
+    },
+    "USDJPY": {
+      "tier": "Tier1",
+      "dir": "SELL",
+      "judge": "除外",
+      "note": "BSL sweepのみ・CHoCH未確定",
+      "rr": 0.2,
+      "tf4": "BEAR",
+      "weeklyPct": 0.1
+    },
+    "EURJPY": {
+      "tier": "—",
+      "dir": "WAIT",
+      "judge": "除外",
+      "note": "1Hもレンジ",
+      "rr": null,
+      "tf4": "NEUTRAL",
+      "weeklyPct": 0.45
+    },
+    "AUDJPY": {
+      "tier": "—",
+      "dir": "WAIT",
+      "judge": "除外",
+      "note": "4H逆行のため除外",
+      "rr": 1.5,
+      "tf4": "BULL",
+      "weeklyPct": 0.81
+    },
+    "CHFJPY": {
+      "tier": "—",
+      "dir": "WAIT",
+      "judge": "除外",
+      "note": "1Hもレンジ",
+      "rr": null,
+      "tf4": "NEUTRAL",
+      "weeklyPct": 1.01
+    },
+    "AUDUSD": {
+      "tier": "—",
+      "dir": "WAIT",
+      "judge": "除外",
+      "note": "1Hもレンジ",
+      "rr": null,
+      "tf4": "BULL",
+      "weeklyPct": 0.72
+    },
+    "EURCHF": {
+      "tier": "—",
+      "dir": "WAIT",
+      "judge": "除外",
+      "note": "1Hもレンジ",
+      "rr": null,
+      "tf4": "NEUTRAL",
+      "weeklyPct": -0.56
+    },
+    "GBPCHF": {
+      "tier": "—",
+      "dir": "WAIT",
+      "judge": "除外",
+      "note": "1Hもレンジ",
+      "rr": null,
+      "tf4": "BULL",
+      "weeklyPct": 0.33
+    },
+    "EURUSD": {
+      "tier": "—",
+      "dir": "WAIT",
+      "judge": "除外",
+      "note": "4H逆行のため除外",
+      "rr": 1.1,
+      "tf4": "BULL",
+      "weeklyPct": 0.35
+    },
+    "GBPUSD": {
+      "tier": "Tier2",
+      "dir": "BUY",
+      "judge": "除外",
+      "note": "SSL sweepのみ・CHoCH未確定",
+      "rr": 0.3,
+      "tf4": "NEUTRAL",
+      "weeklyPct": 1.25
+    },
+    "GBPJPY": {
+      "tier": "—",
+      "dir": "WAIT",
+      "judge": "除外",
+      "note": "1Hもレンジ",
+      "rr": null,
+      "tf4": "BULL",
+      "weeklyPct": 1.35
+    },
+    "USDCHF": {
+      "tier": "—",
+      "dir": "WAIT",
+      "judge": "除外",
+      "note": "1Hもレンジ",
+      "rr": null,
+      "tf4": "NEUTRAL",
+      "weeklyPct": -0.9
+    }
+  },
+  "trendGreen": {
+    "XAUUSD": 0,
+    "BTCUSD": 2,
+    "USDJPY": 0,
+    "EURJPY": 0,
+    "AUDJPY": 2,
+    "CHFJPY": 0,
+    "AUDUSD": 1,
+    "EURCHF": 1,
+    "GBPCHF": 3,
+    "EURUSD": 1,
+    "GBPUSD": 2,
+    "GBPJPY": 2,
+    "USDCHF": 1
+  },
+  "top3": [
+    {
+      "pair": "GBPCHF",
+      "green": 3,
+      "dir": "up"
+    },
+    {
+      "pair": "BTCUSD",
+      "green": 2,
+      "dir": "up"
+    },
+    {
+      "pair": "AUDJPY",
+      "green": 2,
+      "dir": "up"
+    }
+  ],
+  "cotBiasByPair": {
+    "XAUUSD": "long",
+    "BTCUSD": "neutral",
+    "USDJPY": "long",
+    "EURJPY": "short",
+    "AUDJPY": "short",
+    "CHFJPY": "short",
+    "GBPJPY": "short",
+    "AUDUSD": "short",
+    "EURCHF": "long",
+    "GBPCHF": "short",
+    "EURUSD": "short",
+    "GBPUSD": "short",
+    "USDCHF": "long"
+  },
+  "cotDate": "2026-10-13T00:00:00.000",
+  "csiData": {
+    "DXY": -0.62,
+    "JXY": -0.74,
+    "EXY": 0.08,
+    "BXY": 0.98,
+    "CHFX": 0.54,
+    "AXY": 0.77,
+    "XAU": 0.36,
+    "BTC": 3.1
+  },
+  "dxyBias": "weak",
+  "todayEvents": [],
+  "lnScan": {
+    "USDJPY": {
+      "trend": "down",
+      "sr": "strong",
+      "pattern": "",
+      "rsi": "50.7"
+    },
+    "EURJPY": {
+      "trend": "down",
+      "sr": "strong",
+      "pattern": "",
+      "rsi": "53.8"
+    },
+    "AUDJPY": {
+      "trend": "up",
+      "sr": "none",
+      "pattern": "",
+      "rsi": "58.5"
+    },
+    "CHFJPY": {
+      "trend": "range",
+      "sr": "strong",
+      "pattern": "",
+      "rsi": "55.8"
+    },
+    "AUDUSD": {
+      "trend": "range",
+      "sr": "medium",
+      "pattern": "",
+      "rsi": "58.7"
+    },
+    "EURCHF": {
+      "trend": "up",
+      "sr": "strong",
+      "pattern": "",
+      "rsi": "50"
+    },
+    "GBPCHF": {
+      "trend": "up2",
+      "sr": "medium",
+      "pattern": "",
+      "rsi": "53.7"
+    },
+    "EURUSD": {
+      "trend": "range",
+      "sr": "medium",
+      "pattern": "",
+      "rsi": "54.3"
+    },
+    "GBPUSD": {
+      "trend": "up2",
+      "sr": "none",
+      "pattern": "",
+      "rsi": "59.4"
+    },
+    "GBPJPY": {
+      "trend": "up",
+      "sr": "none",
+      "pattern": "",
+      "rsi": "59.7"
+    },
+    "USDCHF": {
+      "trend": "up",
+      "sr": "medium",
+      "pattern": "",
+      "rsi": "45.6"
+    }
+  }
+}
